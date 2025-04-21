@@ -25,6 +25,31 @@
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            /* Copy protection styles */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Disable image dragging */
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+        }
+
+        /* Disable context menu */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .bg-darker {
@@ -362,7 +387,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
     <div class="container py-4">
         <!-- Home Page -->
         <div id="home-page" class="page active-page">
@@ -379,7 +404,7 @@
                                 <p class="text-muted mb-1" style="font-size: 0.85rem;">Account Name</p>
                                 <h3 class="luxury-text" style="font-size: 1.5rem;">NARINPAT MEECHAI</h3>
                             </div>
-                            <img src=" https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" class="card-logo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" class="card-logo">
                         </div>
 
                         <div class="mb-3">
@@ -424,9 +449,7 @@
                             <label class="form-label text-muted" style="font-size: 0.85rem;">Account Name</label>
                             <div class="input-luxury p-2">
                                 <div class="d-flex justify-content-between align-items-center">
-                                     <span style="font-size: 0.95rem;">นรินทร์ภัทร มีชัย</span>
-                                    
-                        
+                                    <span style="font-size: 0.95rem;">นรินทร์ภัทร มีชัย</span>
                                     <span class="text-muted" style="font-size: 0.85rem;">G-WALLET</span>
                                 </div>
                             </div>
@@ -496,18 +519,19 @@
                             <p class="text-muted mb-1" style="font-size: 0.85rem;">Amount Paid</p>
                             <h2 id="paid-amount" class="amount-display" style="font-size: 1.8rem;">0.00 THB</h2>
                         </div>
+                        <center> <img src=" https://img2.pic.in.th/pic/1000008216.jpg" class="card-logo"></center>
 
                         <div class="qr-container mb-3">
                             <img id="promptpay-qr-img" src="" alt="QR Code" style="width: 100%; height: 100%;">
                         </div>
 
                         <div class="qr-timer" id="qr-timer">
-                            QR Code will expire in: 01:00
+                            QR Code จะหมดอายุในอีก: 01:00
                         </div>
 
                         <div class="text-start mb-3">
                             <div class="transaction-detail">
-                                <span class="transaction-label">Recipient</span>
+                                <span class="transaction-label">Account Name</span>
                                 <span class="transaction-value">นรินทร์ภัทร มีชัย</span>
                             </div>
                             <div class="transaction-detail">
@@ -524,11 +548,15 @@
                             </div>
                             <div class="transaction-detail">
                                 <span class="transaction-label">Transaction ID</span>
-                                <span class="transaction-value">PPW97910501</span>
+                                <span class="transaction-value" id="transaction-id">PPW97910500</span>
                             </div>
                         </div>
 
+                        <div class="capture-instruction">
 
+                            <h5 class="luxury-text">กรุณาแคปหน้าจอเพื่อชำระเงิน</h5>
+                            
+                        </div>
                     </div>
                 </div>
             </div>
@@ -547,8 +575,10 @@
         let currentAmount = '0';
         let currentPage = 'home';
         const phoneNumber = "140000621803299"; // PromptPay number
+        const FEE_AMOUNT = 5.00; // Fixed fee amount
         let qrTimer;
         let timeLeft = 60; // 1 minute in seconds
+        let transactionCounter = 0; // Starting counter for transaction IDs
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -562,6 +592,27 @@
 
             // Initialize amount display
             updateAmountDisplay();
+
+            // Copy protection - disable right click
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'การป้องกันการคัดลอก',
+                    text: 'ไม่สามารถใช้เมนูคลิกขวาได้ในหน้านี้',
+                    icon: 'warning',
+                    confirmButtonColor: '#00ffaa',
+                    background: '#121212',
+                    color: '#ffffff',
+                    confirmButtonText: 'เข้าใจแล้ว'
+                });
+            });
+
+            // Prevent image dragging
+            document.querySelectorAll('img').forEach(img => {
+                img.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                });
+            });
         });
 
         // Navigation functions
@@ -580,6 +631,9 @@
             if (page === 'bill') {
                 updateQRCode();
                 startQRTimer();
+                // Increment transaction ID counter
+                transactionCounter++;
+                updateTransactionID();
             } else {
                 // Clear any existing timer when leaving bill page
                 if (qrTimer) {
@@ -597,6 +651,13 @@
             } else if (currentPage === 'loading') {
                 navigateTo('payment');
             }
+        }
+
+        // Update transaction ID with auto-increment
+        function updateTransactionID() {
+            const baseID = "PPW979105";
+            const paddedCounter = String(transactionCounter).padStart(2, '0');
+            document.getElementById('transaction-id').textContent = baseID + paddedCounter;
         }
 
         // Payment functions
@@ -654,9 +715,13 @@
             // Show loading page
             navigateTo('loading');
 
-            // Set the paid amount in the bill page
+            // Calculate amounts
+            let originalAmount = parseFloat(currentAmount);
+            let totalAmount = originalAmount + FEE_AMOUNT;
+
+            // Set the amounts in the bill page
             document.getElementById('paid-amount').textContent = 
-                parseFloat(currentAmount).toLocaleString('en-US', {
+                originalAmount.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 }) + ' THB';
@@ -668,8 +733,10 @@
         }
 
         function updateQRCode() {
-            let amount = parseFloat(currentAmount);
-            let qrData = promptpayQr(phoneNumber, {amount: amount});
+            let originalAmount = parseFloat(currentAmount);
+            let totalAmount = originalAmount + FEE_AMOUNT;
+
+            let qrData = promptpayQr(phoneNumber, {amount: totalAmount});
             let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=500x500&margin=10`;
             $('#promptpay-qr-img').attr('src', qrUrl);
         }
@@ -727,7 +794,7 @@
         function resetPage() {
             Swal.fire({
                 title: 'QR CODE EXPIRED',
-                text: 'ระบบได้ทำการรีเซ็ท QR CODE แล้ว กรุณาสร้างรายการใหม่ ',
+                text: 'ระบบได้ทำการรีเซ็ท QR CODE แล้ว กรุณาสร้างรายการใหม่',
                 icon: 'warning',
                 confirmButtonColor: '#00ffaa',
                 background: '#121212',
@@ -742,3 +809,4 @@
     </script>
 </body>
 </html>
+
