@@ -25,7 +25,6 @@
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            /* Copy protection styles */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -355,6 +354,19 @@
             margin-bottom: 10px;
         }
 
+        /* Copy icon style */
+        .copy-icon {
+            color: var(--luxury-green);
+            margin-left: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-icon:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 576px) {
             .qr-container {
@@ -519,7 +531,7 @@
                             <p class="text-muted mb-1" style="font-size: 0.85rem;">Amount Paid</p>
                             <h2 id="paid-amount" class="amount-display" style="font-size: 1.8rem;">0.00 THB</h2>
                         </div>
-                        <center> <img src=" https://img2.pic.in.th/pic/1000008216.jpg" class="card-logo"></center>
+                        <center> <img src="https://img2.pic.in.th/pic/1000008216.jpg" class="card-logo"></center>
 
                         <div class="qr-container mb-3">
                             <img id="promptpay-qr-img" src="" alt="QR Code" style="width: 100%; height: 100%;">
@@ -536,7 +548,9 @@
                             </div>
                             <div class="transaction-detail">
                                 <span class="transaction-label">Account Number</span>
-                                <span class="transaction-value">140000621803299</span>
+                                <span class="transaction-value">140000621803299 
+                                    <i class="fas fa-copy copy-icon" onclick="copyToClipboard('140000621803299')" title="Copy Account Number"></i>
+                                </span>
                             </div>
                             <div class="transaction-detail">
                                 <span class="transaction-label">Date</span>
@@ -553,9 +567,7 @@
                         </div>
 
                         <div class="capture-instruction">
-
                             <h5 class="luxury-text">กรุณาแคปหน้าจอเพื่อชำระเงิน</h5>
-                            
                         </div>
                     </div>
                 </div>
@@ -579,7 +591,7 @@
         let qrTimer;
         let timeLeft = 60; // 1 minute in seconds
         let transactionCounter = 0; // Starting counter for transaction IDs
-
+        
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             // Set current date and time
@@ -592,7 +604,7 @@
 
             // Initialize amount display
             updateAmountDisplay();
-
+            
             // Copy protection - disable right click
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
@@ -606,7 +618,7 @@
                     confirmButtonText: 'เข้าใจแล้ว'
                 });
             });
-
+            
             // Prevent image dragging
             document.querySelectorAll('img').forEach(img => {
                 img.addEventListener('dragstart', function(e) {
@@ -614,6 +626,43 @@
                 });
             });
         });
+
+        // Copy to clipboard function
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'คัดลอกเลขบัญชีเรียบร้อยแล้ว'
+                });
+            }).catch(function(err) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+                Toast.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถคัดลอกได้'
+                });
+            });
+        }
 
         // Navigation functions
         function navigateTo(page) {
@@ -809,4 +858,3 @@
     </script>
 </body>
 </html>
-
